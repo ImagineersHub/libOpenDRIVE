@@ -5,11 +5,12 @@
 #include "OpenDriveMap.h"
 #include "Road.h"
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
+#include <string>
 #include <vector>
-
 int main(int argc, char** argv)
 {
     if (argc < 2)
@@ -17,7 +18,8 @@ int main(int argc, char** argv)
         printf("ERROR: too few arguments\n");
         return -1;
     }
-    odr::OpenDriveMap odr_map(argv[1]);
+    std::string       xodr_file = argv[1];
+    odr::OpenDriveMap odr_map(xodr_file);
     const double      eps = 0.1;
 
     std::vector<odr::Vec3D> lane_pts;
@@ -51,10 +53,15 @@ int main(int argc, char** argv)
     odr::RoadNetworkMesh road_network_mesh = odr_map.get_road_network_mesh(eps);
     printf("Got road network mesh\n");
 
-    // std::ofstream out_file("out.obj");
-    // out_file << road_network_mesh.get_mesh().get_obj() << std::endl;
-    // out_file.close();
-    // printf("Wrote .obj file to 'out.obj'\n");
+    std::string::size_type pos = xodr_file.find_last_of(".");
+    std::string            substr = xodr_file.substr(0, pos);
+
+    // Create the new filename
+    std::string newFilename = substr + ".obj";
+    std::cout << "Export road mesh to: " << newFilename << std::endl;
+    std::ofstream out_file(newFilename);
+    out_file << road_network_mesh.get_mesh().get_obj() << std::endl;
+    out_file.close();
 
     return 0;
 }
